@@ -1,6 +1,16 @@
 import React, { Component } from "react"
 import styled from "styled-components"
 
+const colors = {
+  blue_500: "#0984e3",
+
+  grey_100: "#f7f7f7",
+  grey_500: "#dfe6e9",
+  grey_900: "#2d2d2d",
+
+  alert_500: "#ff7675"
+}
+
 const words = [
   { word: "space", clue: "Something in a room and above your head" },
   { word: "knife", clue: "Something in a room and above your head" },
@@ -42,11 +52,64 @@ const buildCrossword = (entry, wordIndex) => {
 }
 
 class App extends Component {
+  state = {
+    currentWord: "",
+    currentClue: "",
+    entries: []
+  }
+  handleAddEntry = () => {
+    if (!this.state.currentWord.length || !this.state.currentClue.length) {
+      return this.setState({ error: "Word and Clue cannot be empty" })
+    }
+    this.setState(state => ({
+      error: null,
+      currentWord: "",
+      currentClue: "",
+      entries: [
+        ...state.entries,
+        { word: state.currentWord, clue: state.currentClue }
+      ]
+    }))
+  }
+  handleChange = (key, e) => {
+    const value = e.target.value
+    this.setState({ [key]: value })
+  }
   render() {
     return (
       <AppWrapper>
-        <h1 className="app-title">Crossword</h1>
-        <div className="grid__container">{words.map(buildCrossword)}</div>
+        <div className="grid__container">
+          {this.state.entries.map(buildCrossword)}
+        </div>
+        <div className="entries__container">
+          <ul className="entries-list">
+            {this.state.entries.map((entry, i) => (
+              <li className="entry" key={i}>
+                <span>{entry.word}</span>
+                <span>/</span>
+                <span>{entry.clue}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="add-entry">
+            {this.state.error && <p className="error">{this.state.error}</p>}
+            <div className="input-wrapper">
+              <input
+                type="text"
+                placeholder="Word"
+                value={this.state.currentWord}
+                onChange={e => this.handleChange("currentWord", e)}
+              />
+              <input
+                type="text"
+                placeholder="Clue"
+                value={this.state.currentClue}
+                onChange={e => this.handleChange("currentClue", e)}
+              />
+            </div>
+            <button onClick={this.handleAddEntry}>add entry</button>
+          </div>
+        </div>
       </AppWrapper>
     )
   }
@@ -54,30 +117,78 @@ class App extends Component {
 
 const AppWrapper = styled.main`
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
   min-height: 100vh;
-  background: #f7f7f7;
-  .app-title {
-    margin: 0;
-    position: absolute;
-    top: calc(100% - 2rem);
-    left: 2rem;
-    font-size: 3rem;
-    font-style: italic;
-    color: #0984e3;
-    transform: rotate(270deg);
-    transform-origin: left top 0;
-  }
+  background: ${colors.grey_100};
   .grid__container {
     display: grid;
-    grid: repeat(10, 5rem) / repeat(10, 5rem);
-    justify-content: center;
+    grid: repeat(10, 10vmin) / repeat(10, 10vmin);
+    align-self: start;
+    justify-self: center;
+    background: ${colors.grey_500};
+    border: none;
+    @media (min-width: 60rem) {
+      grid: repeat(10, 5rem) / repeat(10, 5rem);
+      border: 2px solid ${colors.grey_500};
+      grid-gap: 2px;
+      align-self: center;
+      justify-self: center;
+    }
+  }
+  .entries__container {
+    padding: 2rem;
+    padding-bottom: 0;
+    align-self: end;
+    .entries-list {
+      margin: 0;
+      padding: 0;
+      .entry {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+      }
+    }
+    .add-entry {
+      .error {
+        color: ${colors.alert_500};
+      }
+      .input-wrapper {
+        display: flex;
+        input {
+          display: block;
+          flex: 2;
+          max-width: 100%;
+          padding: 1rem 2rem;
+          font-size: 1.5rem;
+          font-family: "IBM Plex Mono", "Courier New", Courier, monospace;
+          outline: none;
+          &:not(:last-of-type) {
+            margin-right: 2rem;
+            flex: 1;
+          }
+        }
+      }
+      button {
+        display: block;
+        margin-top: 2rem;
+        padding: 1rem 2rem;
+        background: ${colors.blue_500};
+        border: none;
+        color: ${colors.grey_100};
+        font-size: 1.5rem;
+        font-family: "IBM Plex Mono", "Courier New", Courier, monospace;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        width: 100%;
+        outline: none;
+      }
+    }
+  }
+  @media (min-width: 60rem) {
+    grid-template-columns: repeat(2, 1fr);
     align-content: center;
-    grid-gap: 2px;
-    background: #dfe6e9;
-    border: 2px solid #dfe6e9;
   }
 `
 
@@ -89,7 +200,7 @@ const Cell = styled.div.attrs({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f7f7f7;
+  background: ${colors.grey_100};
   font-size: 2rem;
   &.blank {
     background: #dfe6e9;
@@ -98,7 +209,7 @@ const Cell = styled.div.attrs({
     position: absolute;
     top: 0.5rem;
     left: 0.5rem;
-    color: #0984e3;
+    color: ${colors.blue_500};
     font-size: 1rem;
   }
 `
